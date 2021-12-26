@@ -40,10 +40,10 @@ class MeanAverageError(object):
 
             this_test_ratings = test_ratings[test_ratings['user_id'] == user_id]
 
-            num_movies = 0
             if len(this_test_ratings) > 0:
 
                 movie_ids = this_test_ratings['movie_id'].unique()
+                num_movies = 0
                 for item_id in tqdm(movie_ids):
                     actual_rating = this_test_ratings[this_test_ratings['movie_id'] == item_id].iloc[0]['rating']
                     predicted_rating = self.rec.predict_score_by_ratings(item_id, movies)
@@ -93,7 +93,7 @@ class PrecisionAtK(object):
                 recs = list(self.rec.recommend_items_by_ratings(user_id,
                                                                 dict_for_rec,
                                                                 num=self.K))
-                if len(recs) > 0:
+                if recs:
                     AP = self.average_precision_k(recs, relevant_ratings)
                     AR = self.recall_at_k(recs, relevant_ratings)
                     arks.append(AR)
@@ -103,8 +103,8 @@ class PrecisionAtK(object):
                 else:
                     no_rec += 1
 
-        average_recall = total_recall_score/len(arks) if len(arks) > 0 else 0
-        mean_average_precision = total_precision_score/len(apks) if len(apks) > 0 else 0
+        average_recall = total_recall_score/len(arks) if arks else 0
+        mean_average_precision = total_precision_score/len(apks) if apks else 0
         output_str = "#userid {}, MAP {}, average recall {}, len-ap {}, len-ar {}, no_recs {}"
         print(output_str.format(user_id_count,
                                 mean_average_precision,
@@ -120,7 +120,7 @@ class PrecisionAtK(object):
         if len(actual) == 0:
             return Decimal(0.0)
 
-        TP = set([r[0] for r in recs if r[0] in actual])
+        TP = {r[0] for r in recs if r[0] in actual}
 
         return Decimal(len(TP) / len(actual))
 

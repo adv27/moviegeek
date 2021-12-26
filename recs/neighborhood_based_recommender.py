@@ -36,16 +36,16 @@ class NeighborhoodBasedRecs(base_recommender):
         candidate_items = candidate_items.order_by('-similarity')[:self.max_candidates]
 
 
-        recs = dict()
+        recs = {}
         for candidate in candidate_items:
             target = candidate.target
-
-            pre = 0
-            sim_sum = 0
 
             rated_items = [i for i in candidate_items if i.target == target][:self.neighborhood_size]
 
             if len(rated_items) > 1:
+                pre = 0
+                sim_sum = 0
+
                 for sim_item in rated_items:
                     r = Decimal(movie_ids[sim_item.source] - user_mean)
                     pre += sim_item.similarity * r
@@ -54,8 +54,9 @@ class NeighborhoodBasedRecs(base_recommender):
                     recs[target] = {'prediction': Decimal(user_mean) + pre / sim_sum,
                                     'sim_items': [r.source for r in rated_items]}
 
-        sorted_items = sorted(recs.items(), key=lambda item: -float(item[1]['prediction']))[:num]
-        return sorted_items
+        return sorted(
+            recs.items(), key=lambda item: -float(item[1]['prediction'])
+        )[:num]
 
     def predict_score(self, user_id, item_id):
 

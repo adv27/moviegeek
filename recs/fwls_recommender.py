@@ -55,7 +55,7 @@ class FeatureWeightedLinearStacking(base_recommender):
 
     def merge_predictions(self, user_id, cb_recs, cf_recs, num):
 
-        combined_recs = dict()
+        combined_recs = {}
         for rec in cb_recs:
             movie_id = rec[0]
             pred = rec[1]['prediction']
@@ -64,11 +64,11 @@ class FeatureWeightedLinearStacking(base_recommender):
         for rec in cf_recs:
             movie_id = rec[0]
             pred = rec[1]['prediction']
-            if movie_id in combined_recs.keys():
+            if movie_id in combined_recs:
                 combined_recs[movie_id]['cf'] = pred
             else:
                 combined_recs[movie_id] = {'cf': pred}
-        fwls_preds = dict()
+        fwls_preds = {}
         for key, recs in combined_recs.items():
             if 'cb' not in recs.keys():
                 recs['cb'] = self.cb.predict_score(user_id, key)
@@ -76,9 +76,8 @@ class FeatureWeightedLinearStacking(base_recommender):
                 recs['cf'] = self.cf.predict_score(user_id, key)
             pred = self.prediction(recs['cb'], recs['cf'], user_id)
             fwls_preds[key] = {'prediction': pred}
-        sorted_items = sorted(fwls_preds.items(),
+        return sorted(fwls_preds.items(),
                               key=lambda item: -float(item[1]['prediction']))[:num]
-        return sorted_items
 
     def predict_score(self, user_id, item_id):
         p_cb = self.cb.predict_score(user_id, item_id)

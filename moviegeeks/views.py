@@ -146,7 +146,7 @@ def get_genres():
 
 
 def session_id(request):
-    if not "session_id" in request.session:
+    if "session_id" not in request.session:
         request.session["session_id"] = str(uuid.uuid1())
 
     return request.session["session_id"]
@@ -158,7 +158,7 @@ def user_id(request):
     if user_id:
         request.session['user_id'] = user_id
 
-    if not "user_id" in request.session:
+    if "user_id" not in request.session:
         request.session['user_id'] = random.randint(10000000000, 90000000000)
 
     print("ensured id: ", request.session['user_id'] )

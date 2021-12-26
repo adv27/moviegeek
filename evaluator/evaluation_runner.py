@@ -117,8 +117,7 @@ class EvaluationRunner(object):
 
         map, ar = PrecisionAtK(self.K, self.recommender).calculate_mean_average_precision(train_data, test_data)
         mae = 0
-        results = {'map': map, 'ar': ar, 'mae': mae, 'users': len(users)}
-        return results
+        return {'map': map, 'ar': ar, 'mae': mae, 'users': len(users)}
 
     def calculate_using_ratings(self, all_ratings, min_number_of_ratings=5, min_rank=5):
 
@@ -127,15 +126,12 @@ class EvaluationRunner(object):
         users = ratings.user_id.unique()
         kf = self.split_users()
 
-        validation_no = 0
         maps = Decimal(0.0)
         ars = Decimal(0.0)
         maes = Decimal(0.0)
 
-        for train, test in kf.split(users):
+        for validation_no, (train, test) in enumerate(kf.split(users)):
             self.logger.info('starting validation no {}'.format(validation_no))
-            validation_no += 1
-
             test_data, train_data = self.split_data(min_rank,
                                                     ratings,
                                                     users[test],
@@ -161,8 +157,7 @@ class EvaluationRunner(object):
         return results
 
     def split_users(self):
-        kf = KFold(n_splits=self.folds)
-        return kf
+        return KFold(n_splits=self.folds)
 
     @staticmethod
     def split_data(min_rank, ratings, test_users, train_users):
@@ -228,8 +223,8 @@ def evaluate_cf_recommender():
     with open(file_name, 'a', 1) as logfile:
         logfile.write("ar, map, mae, min_overlap, min_sim, K, min_num_of_ratings, min_rank\n")
 
+        min_rank = min_number_of_ratings / 2
         for k in np.arange(0, 20, 2):
-            min_rank = min_number_of_ratings / 2
             recommender = NeighborhoodBasedRecs()
             er = EvaluationRunner(0,
                                   ItemSimilarityMatrixBuilder(min_overlap, min_sim=min_sim),
@@ -295,9 +290,9 @@ def evaluate_fwls_recommender():
 
         builder = FWLSCalculator(min_overlap, save_path)
 
+        min_rank = min_number_of_ratings / 2
         for data_sample in np.arange(500, 5000, 200):
 
-            min_rank = min_number_of_ratings / 2
             recommender = FeatureWeightedLinearStacking()
             er = EvaluationRunner(0,
                                   builder,

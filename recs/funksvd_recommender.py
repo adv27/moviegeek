@@ -85,6 +85,6 @@ class FunkSVDRecs(base_recommender):
             recs = {r[0]: {'prediction': r[1] + float(self.item_bias[r[0]])}
                     for r in zip(result.index, result) if r[0] not in rated_movies}
 
-        sorted_items = sorted(recs.items(), key=lambda item: -float(item[1]['prediction']))[:num]
-
-        return sorted_items
+        return sorted(
+            recs.items(), key=lambda item: -float(item[1]['prediction'])
+        )[:num]

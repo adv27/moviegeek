@@ -33,7 +33,7 @@ def get_descriptions():
             md.title = film['title']
             md.description = film['overview']
             md.genres = film['genre_ids']
-            if None != md.imdb_id:
+            if md.imdb_id != None:
                 md.save()
 
         time.sleep(1)
@@ -46,25 +46,21 @@ def save_as_csv():
     &primary_release_date.lte=2016-10-22&api_key={}&page={}"""
     api_key = get_api_key()
 
-    file = open('data.json','w')
+    with open('data.json','w') as file:
+        films = []
+        for page in range(1, NUMBER_OF_PAGES):
+            r = requests.get(url.format(api_key, page))
+            for film in r.json()['results']:
+                f = {'id': film['id']}
 
-    films = []
-    for page in range(1, NUMBER_OF_PAGES):
-        r = requests.get(url.format(api_key, page))
-        for film in r.json()['results']:
-            f = dict()
+                f['imdb_id'] = get_imdb_id(f['id'])
+                f['title'] = film['title']
+                f['description'] = film['overview']
+                f['genres'] = film['genre_ids']
+                films.append(f)
+            print("{}: {}".format(page, r.json()))
 
-            f['id'] = film['id']
-            f['imdb_id'] = get_imdb_id(f['id'])
-            f['title'] = film['title']
-            f['description'] = film['overview']
-            f['genres'] = film['genre_ids']
-            films.append(f)
-        print("{}: {}".format(page, r.json()))
-
-    json.dump(films, file, sort_keys=True, indent=4)
-
-    file.close()
+        json.dump(films, file, sort_keys=True, indent=4)
 
 
 def get_imdb_id(moviedb_id):
@@ -77,11 +73,10 @@ def get_imdb_id(moviedb_id):
     if 'imdb_id' not in json:
         return ''
     imdb_id = json['imdb_id']
-    if imdb_id is not None:
-        print(imdb_id)
-        return imdb_id[2:]
-    else:
+    if imdb_id is None:
         return ''
+    print(imdb_id)
+    return imdb_id[2:]
 
 
 def get_api_key():

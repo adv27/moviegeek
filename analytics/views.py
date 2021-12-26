@@ -28,10 +28,10 @@ def user(request, user_id):
     cluster = Cluster.objects.filter(user_id=user_id).first()
     ratings = {r.movie_id: r for r in user_ratings}
 
-    movie_dtos = list()
+    movie_dtos = []
     sum_rating = 0
-    if len(ratings) > 0:
-        sum_of_ratings = sum([r.rating for r in ratings.values()])
+    if ratings:
+        sum_of_ratings = sum(r.rating for r in ratings.values())
         user_avg = sum_of_ratings/decimal.Decimal(len(ratings))
     else:
         user_avg = 0
@@ -49,7 +49,7 @@ def user(request, user_id):
         movie_dtos.append(MovieDto(id, movie.title, r))
         for genre in movie.genres.all():
 
-            if genre.name in genres_ratings.keys():
+            if genre.name in genres_ratings:
                 genres_ratings[genre.name] += r - user_avg
                 genres_count[genre.name] += 1
 
@@ -98,7 +98,7 @@ def content(request, content_id):
         movie_genres = movie.genres.all() if movie is not None else []
         genre_names = list(movie_genres.values('name'))
 
-        ratings = list(r['rating'] for r in ratings)
+        ratings = [r['rating'] for r in ratings]
         agv_rating = sum(ratings)/len(ratings)
         movie_title = movie.title
 
@@ -149,7 +149,7 @@ def cluster(request, cluster_id):
 
         for genre in movie.genres.all():
 
-            if genre.name in genres.keys():
+            if genre.name in genres:
                 genres[genre.name] += r
 
     max_value = max(genres.values())
@@ -309,6 +309,22 @@ class movie_rating():
 def monthdelta(date, delta):
     m, y = (date.month + delta) % 12, date.year + ((date.month) + delta - 1) // 12
     if not m: m = 12
-    d = min(date.day, [31,
-                       29 if y % 4 == 0 and not y % 400 == 0 else 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][m - 1])
+    d = min(
+        date.day,
+        [
+            31,
+            29 if y % 4 == 0 and y % 400 != 0 else 28,
+            31,
+            30,
+            31,
+            30,
+            31,
+            31,
+            30,
+            31,
+            30,
+            31,
+        ][m - 1],
+    )
+
     return date.replace(day=d, month=m, year=y)

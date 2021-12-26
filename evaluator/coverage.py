@@ -30,7 +30,7 @@ class RecommenderCoverage(object):
         self.recommender = recommender
         self.items_in_rec = defaultdict(int)
         self.user_recs = []
-        self.users_with_recs = dict()
+        self.users_with_recs = {}
 
     def calculate_coverage(self, K=6, recName=''):
 
@@ -40,9 +40,9 @@ class RecommenderCoverage(object):
             user_id = user
             recset = self.recommender.recommend_items(int(user_id), num=K)
             self.users_with_recs[user] = recset
-            inx = 1
             if recset:
 
+                inx = 1
                 for rec in recset:
                     self.items_in_rec[rec[0]] += 1
                     self.add_user_recs(inx, rec, user)

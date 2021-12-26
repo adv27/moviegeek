@@ -204,7 +204,7 @@ def main():
     ]
     print("Simulating " + str(len(users)) + " visitors")
 
-    for x in range(0, number_of_events):
+    for _ in range(number_of_events):
         randomuser_id = random.randint(0, len(users) - 1)
         user = users[randomuser_id]
         selected_film = select_film(user)

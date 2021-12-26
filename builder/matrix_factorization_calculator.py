@@ -88,9 +88,7 @@ class MatrixFactorization(object):
         b_ui = self.all_movies_mean + self.user_bias[user] + self.item_bias[item]
         prediction = b_ui + pq
 
-        if prediction > 10:
-            prediction = 10
-        elif prediction < 1:
+        if prediction > 10 or prediction < 1:
             prediction = 10
         return prediction
 
@@ -121,6 +119,7 @@ class MatrixFactorization(object):
 
     def meta_parameter_train(self, ratings_df):
 
+        columns = ['user_id', 'movie_id', 'rating']
         for k in [15, 20, 30, 40, 50, 75, 100]:
             self.initialize_factors(ratings_df, k)
             self.logger.info("Training model with {} factors".format(k))
@@ -128,13 +127,12 @@ class MatrixFactorization(object):
 
             test_data, train_data = self.split_data(10,
                                                     ratings_df)
-            columns = ['user_id', 'movie_id', 'rating']
             ratings = train_data[columns].as_matrix()
             test = test_data[columns].as_matrix()
 
             self.MAX_ITERATIONS = 10
             iterations = 0
-            index_randomized = random.sample(range(0, len(ratings)), (len(ratings) - 1))
+            index_randomized = random.sample(range(len(ratings)), len(ratings) - 1)
 
             for factor in range(k):
                 factor_iteration = 0
@@ -175,8 +173,7 @@ class MatrixFactorization(object):
             pq = np.dot(self.item_factors[item][:factor + 1], self.user_factors[user][:factor + 1].T)
             b_ui = self.all_movies_mean + self.user_bias[user] + self.item_bias[item]
             prediction = b_ui + pq
-            MSE = (prediction - Decimal(row[2])) ** 2
-            return MSE
+            return (prediction - Decimal(row[2])) ** 2
 
         squared = np.apply_along_axis(difference, 1, ratings).sum()
         return math.sqrt(squared / ratings.shape[0])
@@ -188,7 +185,7 @@ class MatrixFactorization(object):
 
         ratings = ratings_df[['user_id', 'movie_id', 'rating']].as_matrix()
 
-        index_randomized = random.sample(range(0, len(ratings)), (len(ratings) - 1))
+        index_randomized = random.sample(range(len(ratings)), len(ratings) - 1)
 
         for factor in range(k):
             factor_time = datetime.now()

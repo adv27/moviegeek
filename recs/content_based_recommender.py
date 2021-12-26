@@ -45,16 +45,16 @@ class ContentBasedRecs(base_recommender):
                                             & Q(similarity__gt=self.min_sim))
 
         sims = sims.order_by('-similarity')[:self.max_candidates]
-        recs = dict()
-        targets = set(s.target for s in sims if not s.target == '')
+        recs = {}
+        targets = {s.target for s in sims if s.target != ''}
         for target in targets:
-
-            pre = 0
-            sim_sum = 0
 
             rated_items = [i for i in sims if i.target == target]
 
-            if len(rated_items) > 0:
+            if rated_items:
+
+                pre = 0
+                sim_sum = 0
 
                 for sim_item in rated_items:
                     r = Decimal(movie_ids[sim_item.source] - user_mean)
@@ -79,11 +79,11 @@ class ContentBasedRecs(base_recommender):
                                             & Q(target=item_id)
                                             & Q(similarity__gt=self.min_sim)).order_by('-similarity')
 
-        pre = 0
-        sim_sum = 0
         prediction = Decimal(0.0)
 
         if len(sims) > 0:
+            pre = 0
+            sim_sum = 0
             for sim_item in sims:
                 r = Decimal(movie_ids[sim_item.source] - user_mean)
                 pre += sim_item.similarity * r

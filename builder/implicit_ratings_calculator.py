@@ -45,10 +45,11 @@ def query_log_data_for_user(userid):
 
 def query_aggregated_log_data_for_user(userid):
 
-    user_data = Log.objects.filter(user_id = userid).values('user_id',
-                                                            'content_id',
-                                                            'event').annotate(count=Count('created'))
-    return user_data
+    return (
+        Log.objects.filter(user_id=userid)
+        .values('user_id', 'content_id', 'event')
+        .annotate(count=Count('created'))
+    )
 
 
 def calculate_implicit_ratings_w_timedecay(user_id):
@@ -56,13 +57,13 @@ def calculate_implicit_ratings_w_timedecay(user_id):
     data = query_log_data_for_user(user_id)
 
     weights = {'buy': w1, 'moredetails': w2, 'details': w3 }
-    ratings = dict()
+    ratings = {}
 
     for entry in data:
         movie_id = entry.movie_id
-        event_type = entry.event
-
         if movie_id in ratings:
+
+            event_type = entry.event
 
             age = (date.today() - entry.created) // timedelta(days=365.2425)
 
@@ -77,7 +78,7 @@ def calculate_implicit_ratings_for_user(user_id):
 
     data = query_aggregated_log_data_for_user(user_id)
 
-    agg_data = dict()
+    agg_data = {}
     max_rating = 0
 
     for row in data:
@@ -87,7 +88,7 @@ def calculate_implicit_ratings_for_user(user_id):
 
         agg_data[content_id][row['event']] = row['count']
 
-    ratings = dict()
+    ratings = {}
     for k, v in agg_data .items():
 
         rating = w1 * v['buy'] + w2 * v['details'] + w3 * v['moredetails']
@@ -95,7 +96,7 @@ def calculate_implicit_ratings_for_user(user_id):
 
         ratings[k] = rating
 
-    for content_id in ratings.keys():
+    for content_id in ratings:
         ratings[content_id] = 10 * ratings[content_id] / max_rating
 
     return ratings

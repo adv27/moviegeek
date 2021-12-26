@@ -54,7 +54,7 @@ def chart(request, take=10):
     ms = {m['movie_id']: m['title'] for m in
           Movie.objects.filter(movie_id__in=ids).values('title', 'movie_id')}
 
-    if len(ms) > 0:
+    if ms:
         sorted_items = [{'movie_id': i['content_id'],
                           'title': ms[i['content_id']]} for i in sorted_items]
     else:
@@ -117,10 +117,10 @@ def similar_users(request, user_id, sim_method):
     users = {u['user_id']: {} for u in sim_users}
 
     for row in dataset:
-        if row.user_id in users.keys():
+        if row.user_id in users:
             users[row.user_id][row.movie_id] = row.rating
 
-    similarity = dict()
+    similarity = {}
 
     switcher = {
         'jaccard': jaccard,

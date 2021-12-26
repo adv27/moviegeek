@@ -29,8 +29,7 @@ from recommender.models import MovieDescriptions, LdaSimilarity
 
 
 def dot_product(v1, v2):
-    dp = sum(map(operator.mul, v1, v2))
-    return dp
+    return sum(map(operator.mul, v1, v2))
 
 
 def vector_cos(v1, v2):
@@ -56,7 +55,7 @@ def load_data():
     docs = list(MovieDescriptions.objects.all())
     data = ["{}, {}, {}".format(d.title, d.genres, d.description) for d in docs]
 
-    if len(data) == 0:
+    if not data:
         print("No descriptions were found, run populate_sample_of_descriptions")
     return data, docs
 
@@ -133,8 +132,7 @@ class LdaModel(object):
 
         en_stop = get_stop_words('en')
 
-        stopped_tokens = [token for token in tokenized_data if token not in en_stop]
-        return stopped_tokens
+        return [token for token in tokenized_data if token not in en_stop]
 
     def save_similarities(self, index, docs, created=datetime.now()):
         if self.db == 'django.db.backends.postgresql':

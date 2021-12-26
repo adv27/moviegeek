@@ -22,12 +22,11 @@ def build_association_rules():
 
 
 def retrieve_buy_events():
-    data = Log.objects.filter(event='buy').values()
-    return data
+    return Log.objects.filter(event='buy').values()
 
 
 def generate_transactions(data):
-    transactions = dict()
+    transactions = {}
 
     for transaction_item in data:
         transaction_id = transaction_item["session_id"]
@@ -55,7 +54,7 @@ def calculate_itemsets_one(transactions, min_sup=0.01):
     N = len(transactions)
 
     temp = defaultdict(int)
-    one_itemsets = dict()
+    one_itemsets = {}
 
     for key, items in transactions.items():
         for item in items:
